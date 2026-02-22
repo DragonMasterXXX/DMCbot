@@ -546,34 +546,23 @@
   </footer>
 
   <script>
-    // Visitor Count - using LocalStorage to simulate visitor count for demo
-    // In real use, replace this with a backend counter API
-    function updateVisitorCounter() {
-      const visitsKey = 'dragonvr_visitor_count';
-      let visits = localStorage.getItem(visitsKey);
-      if (!visits) visits = 0;
-      visits = parseInt(visits, 10) + 1;
-      localStorage.setItem(visitsKey, visits);
-      const counterText = `${visits} Visitors/Dragon Member${visits !== 1 ? 's' : ''}`;
-      document.getElementById('visitorCountNumber').textContent = counterText;
+  // Visitor Count - visible only to current visitor
+  function updateVisitorCounter() {
+    const visitsKey = 'dragonvr_visitor_count';
+    let visits = localStorage.getItem(visitsKey);
+    if (!visits) visits = 0;
+    visits = parseInt(visits, 10) + 1;
+    localStorage.setItem(visitsKey, visits);
+
+    const counterText = `${visits} Visitor${visits !== 1 ? 's' : ''}/Dragon Member`;
+    const visitorNumberEl = document.getElementById('visitorCountNumber');
+    if (visitorNumberEl) {
+      visitorNumberEl.textContent = counterText;
     }
-    window.addEventListener('load', updateVisitorCounter);
+  }
 
-    const profileImg = document.querySelector('.profile-container img');
-    const fireExplosion = document.querySelector('.fire-explosion');
-
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        fireExplosion.classList.add('active');
-        profileImg.classList.add('visible');
-        fireExplosion.addEventListener('animationend', () => {
-          fireExplosion.classList.remove('active');
-          fireExplosion.style.opacity = '0';
-          fireExplosion.style.width = '0';
-          fireExplosion.style.height = '0';
-        }, { once: true });
-      }, 4000);
-    });
-  </script>
+  // Make counter update immediately, even if page hasn't fully loaded
+  document.addEventListener('DOMContentLoaded', updateVisitorCounter);
+</script>
 </body>
 </html>
