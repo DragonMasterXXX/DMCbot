@@ -545,23 +545,62 @@
     </a>
   </footer>
 
-  <script>
-  // Visitor Count - visible only to current visitor
-  function updateVisitorCounter() {
-    const visitsKey = 'dragonvr_visitor_count';
-    let visits = localStorage.getItem(visitsKey);
-    if (!visits) visits = 0;
-    visits = parseInt(visits, 10) + 1;
-    localStorage.setItem(visitsKey, visits);
+  <header>
+  <div class="header-content">
+    <div class="profile-container" aria-label="OfficialDragon1 profile picture" title="OfficialDragon1">
+      <img
+        src="https://yt3.ggpht.com/vbKQ80GzzBAY-lhP9DeiXRavRYxDJd0DkkfZY4_nJjo9RSR5Go2CK3wuCkgpfloYBwUpwKQyHQ=s800-c-k-c0x00ffffff-no-rj"
+        alt="OfficialDragon1 Profile Picture"
+      />
+      <div class="fire-explosion" aria-hidden="true"></div>
+    </div>
 
-    const counterText = `${visits} Visitor${visits !== 1 ? 's' : ''}/Dragon Member`;
-    const visitorNumberEl = document.getElementById('visitorCountNumber');
-    if (visitorNumberEl) {
-      visitorNumberEl.textContent = counterText;
-    }
+    <div style="display:flex; flex-direction: column; align-items:center; flex-grow:1; gap:0.5rem; min-width: 240px;">
+      <div class="header-title-container" aria-label="DragonVR's Realm title">
+        DragonVR's Realm
+        <span class="visitor-counter" aria-live="polite" aria-atomic="true" id="visitorCounter" title="Current visitor count">
+          <span class="green-circle" aria-hidden="true"></span>
+          <span id="visitorCountNumber">0 Visitors</span>
+        </span>
+      </div>
+
+      <nav class="header-buttons">
+        <a href="https://dragonmasterxxx.github.io/whats-new.html/" role="button" tabindex="0" aria-label="Navigate to What's New page">What's New?</a>
+        <a href="https://dragonmasterxxx.github.io/chat.html/" role="button" tabindex="0" aria-label="Navigate to Chat page">Chat</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<!-- FIREBASE VISITOR COUNTER -->
+<script>
+  const visitorKey = 'dragonvr_seen'; // Prevent double-counting
+  const visitorCountEl = document.getElementById('visitorCountNumber');
+  const visitorRef = db.ref('visitorCount'); // Firebase Realtime Database node
+
+  async function updateVisitorCounter() {
+    // Get current count from Firebase
+    visitorRef.once('value', snapshot => {
+      let count = snapshot.val() || 0;
+
+      // Increment only if this visitor hasn't been counted
+      if (!localStorage.getItem(visitorKey)) {
+        count += 1;
+        visitorRef.set(count); // Update Firebase
+        localStorage.setItem(visitorKey, 'true'); // mark counted
+      }
+
+      // Display count
+      visitorCountEl.textContent = `${count} Visitor${count !== 1 ? 's' : ''}`;
+    });
+
+    // Live updates for all users
+    visitorRef.on('value', snapshot => {
+      const liveCount = snapshot.val() || 0;
+      visitorCountEl.textContent = `${liveCount} Visitor${liveCount !== 1 ? 's' : ''}`;
+    });
   }
 
-  // Make counter update immediately, even if page hasn't fully loaded
   document.addEventListener('DOMContentLoaded', updateVisitorCounter);
 </script>
 </body>
