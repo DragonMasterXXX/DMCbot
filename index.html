@@ -179,21 +179,26 @@ setTimeout(() => {
 }, 3000);
 
 // Visitor Counter
-const visitorKey = 'dragonvr_seen';
 const visitorCountEl = document.getElementById('visitorCountNumber');
 const visitorRef = db.ref('visitorCount');
+const visitorKey = 'dragonvr_seen';
 
-visitorRef.once('value', snap => {
-  let count = snap.val() || 0;
-  if(!localStorage.getItem(visitorKey)){
-    count += 1;
-    visitorRef.set(count);
-    localStorage.setItem(visitorKey,'true');
-  }
-  visitorCountEl.textContent = `${count} Visitor${count!==1?'s':''}`;
-});
+// 1. Setup a "Live" listener that updates the UI whenever the database changes
 visitorRef.on('value', snap => {
-  visitorCountEl.textContent = `${snap.val() || 0} Visitor${(snap.val()||0)!==1?'s':''}`;
+  const count = snap.val() || 0;
+  // Keeps your "Dragon Members" text intact
+  visitorCountEl.textContent = `${count} Visitors/Dragon Members`;
+});
+
+// 2. Logic to increment the counter only ONCE per person
+visitorRef.transaction((currentCount) => {
+  // If this person hasn't been seen yet, increase the count in the DB
+  if (!localStorage.getItem(visitorKey)) {
+    localStorage.setItem(visitorKey, 'true');
+    return (currentCount || 0) + 1;
+  }
+  // Otherwise, return nothing (don't change the database)
+  return; 
 });
 </script>
 </body>
