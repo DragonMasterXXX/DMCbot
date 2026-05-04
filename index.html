@@ -178,28 +178,35 @@ setTimeout(() => {
   fireExplosion.classList.add('active');
 }, 3000);
 
-// Visitor Counter
+// Visitor Counter Fix
 const visitorCountEl = document.getElementById('visitorCountNumber');
 const visitorRef = db.ref('visitorCount');
 const visitorKey = 'dragonvr_seen';
 
-// 1. Setup a "Live" listener that updates the UI whenever the database changes
-visitorRef.on('value', snap => {
-  const count = snap.val() || 0;
-  // Keeps your "Dragon Members" text intact
-  visitorCountEl.textContent = `${count} Visitors/Dragon Members`;
+// Force a sync with the database immediately
+visitorRef.on('value', (snap) => {
+  const currentCount = snap.val();
+  
+  // If the DB is actually empty, currentCount might be null
+  const displayCount = currentCount || 0;
+  
+  // Update the UI
+  visitorCountEl.textContent = `${displayCount} Visitors/Dragon Members`;
+  console.log("Firebase synced. Current count:", displayCount);
+}, (error) => {
+  console.error("Firebase Read Error:", error);
 });
 
-// 2. Logic to increment the counter only ONCE per person
-visitorRef.transaction((currentCount) => {
-  // If this person hasn't been seen yet, increase the count in the DB
-  if (!localStorage.getItem(visitorKey)) {
-    localStorage.setItem(visitorKey, 'true');
-    return (currentCount || 0) + 1;
-  }
-  // Otherwise, return nothing (don't change the database)
-  return; 
-});
+// Increment Logic
+if (!localStorage.getItem(visitorKey)) {
+  visitorRef.transaction((count) => {
+    return (count || 0) + 1;
+  }, (error, committed) => {
+    if (committed) {
+      localStorage.setItem(visitorKey, 'true');
+    }
+  });
+}
 </script>
 </body>
 </html>
