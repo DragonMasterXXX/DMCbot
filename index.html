@@ -70,8 +70,7 @@ header::after { right:15px; animation-delay:1.5s; }
     gap:1rem;
 
     position:relative;
-
-    left:-100px;
+    left:0;
 }
 .visitor-counter { font-family:'Montserrat',sans-serif; font-weight:700; font-size:1.3rem; color:#0f0; user-select:none; display:flex; align-items:center; gap:0.5rem; pointer-events:none; margin-top:0.2rem; letter-spacing:1.2px; text-shadow:0 0 6px #0f0,0 0 12px #0f0; }
 .visitor-counter .green-circle { width:14px; height:14px; background:linear-gradient(135deg,#00ff00,#00cc00); border-radius:50%; box-shadow:0 0 5px 2px #00ff00,0 0 8px 4px #00cc00; animation:flickerGreen 2s infinite alternate; }
@@ -107,7 +106,32 @@ footer a:hover { color:#ff7a00; text-shadow:0 0 8px #ff7a00,0 0 12px #ff4500; }
 
 /* Responsive */
 @media(max-width:900px){header{font-size:2.4rem; gap:1rem; min-height:140px;} .profile-container{width:100px;height:100px;} .profile-container img{width:100px;height:100px;} .header-title-container{font-size:4rem !important;white-space:normal;gap:0.5rem;}}
-@media(max-width:600px){header{font-size:2rem;min-height:130px;} .profile-container{width:80px;height:80px;} .profile-container img{width:80px;height:80px;} h1{font-size:2.2rem;} .header-title-container{font-size:3rem !important;white-space:normal;gap:0.4rem;}}
+@media(max-width:600px){
+  header{
+    font-size:2rem;
+    min-height:130px;
+  }
+
+  .profile-container{
+    width:80px;
+    height:80px;
+  }
+
+  .profile-container img{
+    width:80px;
+    height:80px;
+  }
+
+  h1{
+    font-size:2.2rem;
+  }
+
+  .header-title-container{
+    font-size:3rem !important;
+    white-space:normal;
+    gap:0.4rem;
+  }
+}
 </style>
 </head>
 <body>
@@ -210,11 +234,18 @@ const db = firebase.database();
 
 // Show profile after 3 seconds
 const profileContainer = document.querySelector('.profile-container');
-const fireExplosion = profileContainer.querySelector('.fire-explosion');
-setTimeout(() => {
-  profileContainer.classList.add('visible');
-  fireExplosion.classList.add('active');
-}, 3000);
+
+if (profileContainer) {
+  const fireExplosion = profileContainer.querySelector('.fire-explosion');
+
+  setTimeout(() => {
+    profileContainer.classList.add('visible');
+
+    if (fireExplosion) {
+      fireExplosion.classList.add('active');
+    }
+  }, 3000);
+}
 
 // Visitor Counter Fix
 const visitorCountEl = document.getElementById('visitorCountNumber');
@@ -223,14 +254,14 @@ const visitorKey = 'dragonvr_seen';
 
 // Force a sync with the database immediately
 visitorRef.on('value', (snap) => {
-  const currentCount = snap.val();
-  
-  // If the DB is actually empty, currentCount might be null
-  const displayCount = currentCount || 0;
-  
-  // Update the UI
-  visitorCountEl.textContent = `${displayCount} Visitors/Dragon Members`;
-  console.log("Firebase synced. Current count:", displayCount);
+  let currentCount = snap.val();
+
+  // Ensure it's always a valid number
+  if (typeof currentCount !== "number") {
+    currentCount = 0;
+  }
+
+  visitorCountEl.textContent = `${currentCount} Visitors/Dragon Members`;
 }, (error) => {
   console.error("Firebase Read Error:", error);
 });
