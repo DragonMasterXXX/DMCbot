@@ -246,11 +246,19 @@ if (profileContainer) {
     }
   }, 3000);
 }
-
-// Visitor Counter Fix
+// Visitor Counter Fix & YouTube Formatting
 const visitorCountEl = document.getElementById('visitorCountNumber');
 const visitorRef = db.ref('visitorCount');
 const visitorKey = 'dragonvr_seen';
+
+// Helper function to format large numbers like YouTube (e.g., 1K, 1.5M)
+function formatCounter(num) {
+  return new Intl.NumberFormat('en-US', {
+    notation: 'compact',
+    compactDisplay: 'short',
+    maximumFractionDigits: 1
+  }).format(num);
+}
 
 // Force a sync with the database immediately
 visitorRef.on('value', (snap) => {
@@ -261,12 +269,13 @@ visitorRef.on('value', (snap) => {
     currentCount = 0;
   }
 
-  visitorCountEl.textContent = `${currentCount} Visitors/Dragon Members`;
+  // Formatting applied here
+  visitorCountEl.textContent = `${formatCounter(currentCount)} Visitors/Dragon Members`;
 }, (error) => {
   console.error("Firebase Read Error:", error);
 });
 
-// Increment Logic
+// Increment Logic (Restored & Fixed)
 if (!localStorage.getItem(visitorKey)) {
   visitorRef.transaction((count) => {
     return (count || 0) + 1;
